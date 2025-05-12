@@ -1,0 +1,608 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Content Validation Dashboard</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <style>
+      :root {
+        --bg-primary: #0f0e17;
+        --bg-secondary: #16141f;
+        --text-primary: #e2e2ff;
+        --text-secondary: #a7a7ff;
+        --accent-pink: #ff6bcb;
+        --accent-blue: #2de2e6;
+        --accent-purple: #5d3fdd;
+        --accent-red: #ff4a4a;
+
+        /* Light mode colors */
+        --bg-primary-light: #ffffff;
+        --bg-secondary-light: #f0f0f0;
+        --text-primary-light: #333333;
+        --text-secondary-light: #666666;
+        --accent-pink-light: #ff1493;
+        --accent-blue-light: #1e90ff;
+        --accent-purple-light: #8a2be2;
+        --accent-red-light: #ff3333;
+        
+        /* Layout variables */
+        --header-height: 100px;
+        --tabs-height: 50px;
+        --container-padding: 15px;
+        
+        /* Transition variables */
+        --transition-duration: 0.3s;
+      }
+
+      body.light-mode {
+        --bg-primary: var(--bg-primary-light);
+        --bg-secondary: var(--bg-secondary-light);
+        --text-primary: var(--text-primary-light);
+        --text-secondary: var(--text-secondary-light);
+        --accent-pink: var(--accent-pink-light);
+        --accent-blue: var(--accent-blue-light);
+        --accent-purple: var(--accent-purple-light);
+        --accent-red: var(--accent-red-light);
+      }
+
+      @keyframes gradientBG {
+        0% {
+          background-position: 0% 50%;
+        }
+        50% {
+          background-position: 100% 50%;
+        }
+        100% {
+          background-position: 0% 50%;
+        }
+      }
+
+      @keyframes neonPulse {
+        0%,
+        100% {
+          text-shadow: 0 0 5px var(--accent-pink), 0 0 10px var(--accent-purple);
+        }
+        50% {
+          text-shadow: 0 0 15px var(--accent-pink), 0 0 20px var(--accent-purple);
+        }
+      }
+
+      @keyframes slideIn {
+        from {
+          transform: translateY(20px);
+          opacity: 0;
+        }
+        to {
+          transform: translateY(0);
+          opacity: 1;
+        }
+      }
+
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+        transition: background var(--transition-duration) ease,
+                    background-color var(--transition-duration) ease,
+                    border-color var(--transition-duration) ease,
+                    box-shadow var(--transition-duration) ease,
+                    transform var(--transition-duration) ease;
+      }
+
+      html,
+      body {
+        height: 100%;
+        width: 100%;
+        overflow: hidden;
+        margin: 0;
+        padding: 0;
+      }
+
+      body {
+        font-family: "Inter", Arial, sans-serif;
+        line-height: 1.6;
+        background: linear-gradient(
+          45deg,
+          var(--bg-primary),
+          var(--bg-secondary),
+          #201c2b
+        );
+        background-size: 400% 400%;
+        animation: gradientBG 15s ease infinite;
+        color: var(--text-primary);
+        height: 100vh;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+      }
+
+      body.light-mode {
+        background: linear-gradient(
+          45deg,
+          var(--bg-primary),
+          var(--bg-secondary),
+          #e0e0e0
+        );
+      }
+
+      .mode-toggle {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        background: transparent;
+        border: 2px solid var(--accent-purple);
+        color: var(--accent-purple);
+        padding: 0;
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        cursor: pointer;
+        z-index: 10;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 18px;
+        transition: all 0.3s ease;
+      }
+      
+      .mode-toggle:hover {
+        transform: rotate(30deg);
+        box-shadow: 0 0 10px var(--accent-purple);
+      }
+      
+      .reset-button {
+        position: absolute;
+        top: 20px;
+        right: 110px;
+        background: transparent;
+        border: 2px solid var(--accent-red);
+        color: var(--accent-red);
+        padding: 5px 10px;
+        border-radius: 20px;
+        cursor: pointer;
+        z-index: 10;
+        font-size: 12px;
+      }
+      
+      .reset-button:hover {
+        background-color: var(--accent-red);
+        color: var(--bg-primary);
+      }
+
+      .dashboard-container {
+        display: flex;
+        flex-direction: column;
+        width: 100%;
+        max-width: 1200px;
+        margin: 0 auto;
+        flex-grow: 1;
+        padding: var(--container-padding);
+        height: 100vh;
+        overflow: hidden;
+      }
+
+      .header-section {
+        padding: 20px;
+        background-color: var(--bg-secondary);
+        border-bottom: 2px solid var(--accent-purple);
+        animation: slideIn 0.7s ease;
+        margin-bottom: 15px;
+        position: relative;
+        flex-shrink: 0;
+        height: var(--header-height);
+        box-sizing: border-box;
+      }
+
+      .header-greeting {
+        font-size: 2rem;
+        font-weight: 700;
+        color: var(--accent-pink);
+        margin-bottom: 0.5rem;
+        animation: neonPulse 3s infinite;
+      }
+
+      .header-subtext {
+        font-size: 1rem;
+        color: var(--text-secondary);
+        margin-bottom: 1rem;
+      }
+
+      .tab-buttons {
+        display: flex;
+        margin-bottom: 15px;
+        flex-shrink: 0;
+        height: var(--tabs-height);
+        box-sizing: border-box;
+      }
+
+      .tab-button {
+        padding: 10px 20px;
+        background-color: var(--bg-secondary);
+        color: var(--text-secondary);
+        border: 1px solid var(--accent-purple);
+        border-radius: 8px 8px 0 0;
+        cursor: pointer;
+        margin-right: 5px;
+      }
+
+      .tab-button.active {
+        background-color: var(--accent-purple);
+        color: var(--text-primary);
+      }
+
+      .tab-content {
+        display: none;
+        height: 100%;
+        overflow: hidden;
+      }
+
+      .tab-content.active {
+        display: flex;
+        flex-direction: column;
+        flex-grow: 1;
+        height: 100%;
+        overflow: hidden;
+      }
+
+      .content-container {
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+        flex-grow: 1;
+        height: calc(100vh - var(--header-height) - var(--tabs-height) - (var(--container-padding) * 2));
+        overflow: hidden;
+      }
+
+      .summary-section,
+      .medical-section,
+      .chat-section {
+        flex: 1;
+        padding: 15px;
+        background-color: var(--bg-secondary);
+        border-radius: 12px;
+        box-shadow: 0 10px 25px rgba(45, 226, 230, 0.2);
+        display: flex;
+        flex-direction: column;
+        border: 1px solid var(--accent-purple);
+        animation: slideIn 0.9s ease;
+        height: 100%;
+        min-height: 0; /* Allows for proper flexbox sizing */
+        overflow: hidden;
+      }
+
+      .section-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 2px solid var(--accent-purple);
+        padding-bottom: 10px;
+        margin-bottom: 15px;
+      }
+
+      .section-title {
+        font-size: 18px;
+        font-weight: 600;
+        color: var(--accent-purple);
+      }
+      
+      .clear-button {
+        background-color: transparent;
+        color: var(--accent-pink);
+        border: 1px solid var(--accent-pink);
+        border-radius: 6px;
+        padding: 5px 10px;
+        font-size: 12px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+      }
+      
+      .clear-button:hover {
+        background-color: var(--accent-pink);
+        color: var(--bg-primary);
+      }
+      
+      @keyframes button-flash {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.1); background-color: var(--accent-pink); color: var(--bg-primary); }
+        100% { transform: scale(1); }
+      }
+      
+      .button-flash {
+        animation: button-flash 0.3s ease;
+      }
+
+      #summary-content,
+      #medical-content,
+      #chat-messages {
+        flex-grow: 1;
+        overflow-y: auto;
+        padding: 15px;
+        background-color: var(--bg-primary);
+        border-radius: 8px;
+        max-height: none;
+        min-height: 0; /* Important for proper flexbox sizing */
+      }
+
+      .validation-result {
+        margin-bottom: 15px;
+        padding: 10px;
+        border-radius: 8px;
+        background-color: var(--bg-secondary);
+        border-left: 3px solid var(--accent-purple);
+      }
+
+      .validation-summary {
+        margin-bottom: 20px;
+        padding: 15px;
+        border-radius: 8px;
+        background-color: var(--bg-secondary);
+        border: 1px solid var(--accent-blue);
+      }
+
+      .incorrect-text {
+        color: var(--accent-red);
+        text-decoration: line-through;
+        margin-bottom: 8px;
+        font-weight: bold;
+      }
+
+      .correct-text {
+        color: var(--accent-green);
+        margin-bottom: 8px;
+        font-weight: bold;
+      }
+
+      .chat-input-container {
+        display: flex;
+        margin-top: 10px;
+      }
+
+      #chat-input {
+        flex-grow: 1;
+        padding: 10px;
+        border: 1px solid var(--accent-purple);
+        border-radius: 8px;
+        margin-right: 10px;
+        font-family: "Inter", sans-serif;
+        background-color: var(--bg-primary);
+        color: var(--text-primary);
+      }
+
+      .send-button {
+        background-color: var(--accent-pink);
+        color: var(--bg-primary);
+        border: none;
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        box-shadow: 0 0 10px var(--accent-pink);
+        font-size: 16px;
+      }
+
+      .send-button:hover {
+        transform: scale(1.1);
+        background-color: var(--accent-blue);
+        box-shadow: 0 0 15px var(--accent-blue);
+      }
+      
+      .send-button i {
+        position: relative;
+        left: -1px; /* Slight adjustment for optical centering */
+      }
+
+      .message {
+        margin-bottom: 10px;
+        padding: 10px;
+        border-radius: 8px;
+        max-width: 80%;
+        animation: slideIn 0.5s ease;
+      }
+
+      .user-message {
+        background-color: var(--accent-purple);
+        color: var(--text-primary);
+        align-self: flex-end;
+        text-align: right;
+        margin-left: auto;
+      }
+
+      .ai-message {
+        background-color: var(--bg-secondary);
+        color: var(--text-secondary);
+        align-self: flex-start;
+        border-left: 3px solid var(--accent-purple);
+      }
+
+      #chat-messages {
+        display: flex;
+        flex-direction: column;
+      }
+
+      #summary-content::-webkit-scrollbar,
+      #medical-content::-webkit-scrollbar,
+      #chat-messages::-webkit-scrollbar {
+        width: 8px;
+      }
+
+      #summary-content::-webkit-scrollbar-track,
+      #medical-content::-webkit-scrollbar-track,
+      #chat-messages::-webkit-scrollbar-track {
+        background: var(--bg-secondary);
+      }
+
+      #summary-content::-webkit-scrollbar-thumb,
+      #medical-content::-webkit-scrollbar-thumb,
+      #chat-messages::-webkit-scrollbar-thumb {
+        background: var(--accent-purple);
+        border-radius: 4px;
+      }
+
+      .content-preview {
+        margin-top: 10px;
+        padding: 10px;
+        background-color: var(--bg-secondary);
+        border-radius: 8px;
+        font-style: italic;
+      }
+
+      .error {
+        color: var(--accent-red);
+        margin: 10px 0;
+      }
+
+      @media screen and (min-width: 768px) {
+        :root {
+          --header-height: 120px;
+          --tabs-height: 60px;
+        }
+      }
+
+      @media screen and (max-width: 480px) {
+        :root {
+          --header-height: 90px;
+          --tabs-height: 45px;
+        }
+        
+        .header-section {
+          padding: 10px;
+        }
+
+        .header-greeting {
+          font-size: 1.5rem;
+        }
+
+        .header-subtext {
+          font-size: 0.9rem;
+        }
+
+        .section-title {
+          font-size: 16px;
+        }
+
+        #chat-input {
+          font-size: 14px;
+        }
+      }
+
+      /* Override any color transitions specifically */
+      *, *::before, *::after {
+        transition-property: background, background-color, border-color, box-shadow, transform;
+        color: var(--text-primary);
+        fill: var(--text-primary);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="dashboard-container">
+      <div class="header-section">
+        <button class="mode-toggle"><i class="fas fa-sun"></i></button>
+        <div class="header-greeting">Content Validator</div>
+        <div class="header-subtext">Analysis and validation of web content</div>
+      </div>
+
+      <div class="tab-buttons">
+        <button class="tab-button" data-tab="summary-tab">Content</button>
+        <button class="tab-button active" data-tab="medical-tab">Validation</button>
+        <button class="tab-button" data-tab="chat-tab">Assistant</button>
+      </div>
+
+      <div class="content-container">
+        <div id="summary-tab" class="tab-content">
+          <div class="summary-section">
+            <div class="section-header">
+              <span class="section-title">Source Content</span>
+            </div>
+            <div id="summary-content">
+              <p>Loading source content...</p>
+            </div>
+          </div>
+        </div>
+
+        <div id="medical-tab" class="tab-content active">
+          <div class="medical-section">
+            <div class="section-header">
+              <span class="section-title">Content Validation</span>
+            </div>
+            <div id="medical-content">
+              <div class="validation-summary">
+                <h3>Summary</h3>
+                <p id="medical-summary">Loading validation summary...</p>
+              </div>
+              <h3>Validation Results</h3>
+              <div id="validation-results">
+                <p>Loading validation results...</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div id="chat-tab" class="tab-content">
+          <div class="chat-section">
+            <div class="section-header">
+              <span class="section-title">Digital Assistant</span>
+              <button id="clear-chat-button" class="clear-button">Clear Chat</button>
+            </div>
+            <div id="chat-messages">
+              <div class="message ai-message">
+                Hello! I'm your medical content assistant. You can ask me questions about the validated content, request explanations for medical terms, or get more information about any highlighted inaccuracies.
+              </div>
+            </div>
+            <div class="chat-input-container">
+              <input
+                type="text"
+                id="chat-input"
+                placeholder="Ask a question about the content..."
+              />
+              <button id="send-button" class="send-button"><i class="fas fa-paper-plane"></i></button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="sidebar.js"></script>
+    <script>
+      // Immediately set medical tab as active by default when the page loads
+      document.addEventListener('DOMContentLoaded', function() {
+        console.log("Page loaded - setting default tab state");
+        
+        // Check if Chrome storage has data
+        chrome.storage.local.get(['validationData', 'activeTab'], function(result) {
+          console.log("Chrome storage check on load:", result);
+          
+          // Only set default if no explicit activeTab is stored
+          if (!result.activeTab) {
+            // Make medical tab active by default
+            const medicalTab = document.getElementById("medical-tab");
+            const medicalButton = document.querySelector('.tab-button[data-tab="medical-tab"]');
+            
+            if (medicalTab && medicalButton) {
+              console.log("Setting medical tab as default active tab");
+              
+              // Remove active class from all tabs
+              document.querySelectorAll('.tab-button').forEach(btn => {
+                btn.classList.remove('active');
+              });
+              document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.remove('active');
+              });
+              
+              // Add active class to medical tab
+              medicalButton.classList.add('active');
+              medicalTab.classList.add('active');
+            }
+          }
+        });
+      });
+    </script>
+  </body>
+</html>
