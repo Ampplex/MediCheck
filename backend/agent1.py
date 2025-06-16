@@ -17,7 +17,6 @@ from langchain_community.document_loaders import WebBaseLoader
 from langchain_google_genai import ChatGoogleGenerativeAI
 from pydantic import BaseModel, Field
 
-# Configuration and Logging Setup
 load_dotenv()
 logging.basicConfig(
     level=logging.INFO, 
@@ -25,7 +24,6 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-# Set USER_AGENT to resolve the warning
 os.environ['USER_AGENT'] = 'MediCheck-Agent/1.0'
 
 class EnhancedBaseTool(BaseTool):
@@ -137,10 +135,8 @@ class EnhancedMedicalAgentSystem:
         
         self.memory = ConversationBufferMemory(memory_key="chat_history")
         
-        # Store custom instructions
         self.custom_instructions = custom_instructions or "Synthesize information from various reliable sources."
         
-        # Attribute to store comprehensive search results
         self.search_results: Dict[str, str] = {}
 
     def comprehensive_search(self, query: str) -> Dict[str, str]:
@@ -153,10 +149,9 @@ class EnhancedMedicalAgentSystem:
         Returns:
             Dict[str, str]: Dictionary of search results from different sources
         """
-        # Reset previous search results
-        self.search_results = {}
-        
-        # Perform searches across different tools
+       
+        self.search_results = {} # For resetting
+
         search_methods = [
             ("WHO Newsroom", self.who_newsroom_tool._run),
             ("WHO Data", self.who_data_tool._run),
@@ -187,7 +182,7 @@ class EnhancedMedicalAgentSystem:
         Returns:
             str: Synthesized response from LLM in JSON format
         """
-        # Create a comprehensive prompt with all tool responses
+       
         prompt = f"""
         USER QUERY: {query}
         
@@ -197,9 +192,6 @@ class EnhancedMedicalAgentSystem:
         
         """
         
-        # Add all tool responses to the prompt
-        for source, result in search_results.items():
-            prompt += f"--- {source} ---\n{result}\n\n"
         
         # Add final instruction for synthesis in JSON format
         prompt += """
@@ -240,8 +232,6 @@ class EnhancedMedicalAgentSystem:
             response = self.llm.invoke(prompt)
             content = response.content
             
-            # Clean the response in case model still included Markdown formatting
-            content = self._clean_json_response(content)
             
             return content
         except Exception as e:
@@ -261,16 +251,14 @@ class EnhancedMedicalAgentSystem:
         Returns:
             str: Cleaned JSON string
         """
-        # Remove markdown code block formatting if present
+
         response = response.strip()
         
-        # Remove ```json at the beginning
         if response.startswith("```json"):
             response = response[7:].strip()
         elif response.startswith("```"):
             response = response[3:].strip()
-            
-        # Remove trailing ``` if present
+
         if response.endswith("```"):
             response = response[:-3].strip()
             
@@ -288,17 +276,14 @@ class EnhancedMedicalAgentSystem:
             str: Synthesized medical information with source references in JSON format
         """
         try:
-            # Update custom instructions if provided
             if custom_instructions:
                 self.custom_instructions = custom_instructions
                 
             logger.info(f"Processing query: '{query}'")
             logger.info(f"Using custom instructions: {self.custom_instructions}")
             
-            # First, perform comprehensive search to collect all tool responses
             search_results = self.comprehensive_search(query)
             
-            # Generate synthesized response using the LLM with all tool outputs
             json_response = self.synthesize_with_llm(query, search_results)
             
             return json_response
@@ -315,8 +300,8 @@ def get_medical_validation(query: str, custom_instructions: str = None): # This 
     # Create the medical agent with optional custom instructions
     agent = EnhancedMedicalAgentSystem(custom_instructions=custom_instructions)
 
-    try:    
-        # Run the comprehensive search and get the response
+    try:
+        # STARTER
         response = agent.run(query)
         print("\nAssistant:", response)
         return response
